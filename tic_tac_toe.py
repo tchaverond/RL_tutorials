@@ -97,7 +97,7 @@ class Agent:
     def update_state_history(self, state):
         self.state_history.append(state)
         if state not in self.state_scores.keys():   # state we've never seen before
-            self.state_scores[state] = 0
+            self.state_scores[state] = 0.5
 
     def update(self):
         for state, next_state in zip(reversed(self.state_history[:-1]), reversed(self.state_history[1:])):
@@ -140,8 +140,8 @@ def play_game(ag1, ag2, env, draw=False):
 if __name__ == "__main__":
 
     # TODO: optimize computation time (from ~8' for 100k episodes)
-    ag1 = Agent(id=1, epsilon=.1, learning_rate=.1)
-    ag2 = Agent(id=2, epsilon=.1, learning_rate=.1)
+    ag1 = Agent(id=1, epsilon=.1, learning_rate=.5)
+    ag2 = Agent(id=2, epsilon=.1, learning_rate=.5)
     for _ in tqdm(range(100000)):
         env = Environment()
         play_game(ag1, ag2, env, draw=False)
