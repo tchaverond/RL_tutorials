@@ -91,6 +91,9 @@ class Agent:
     def identify_losing_state(self, state):
         self.state_scores[state] = 0
 
+    def identify_draw(self, state):
+        self.state_scores[state] = 0.2
+
     def update_state_history(self, state):
         self.state_history.append(state)
         if state not in self.state_scores.keys():   # state we've never seen before
@@ -99,6 +102,7 @@ class Agent:
     def update(self):
         for state, next_state in zip(reversed(self.state_history[:-1]), reversed(self.state_history[1:])):
             self.state_scores[state] += self.learning_rate * (self.state_scores[next_state] - self.state_scores[state])
+        self.state_history = []
 
 
 
@@ -126,8 +130,8 @@ def play_game(ag1, ag2, env, draw=False):
         ag1.identify_losing_state(state)
         ag2.identify_winning_state(state)
     else:   # draw
-        ag1.identify_losing_state(state)
-        ag2.identify_losing_state(state)
+        ag1.identify_draw(state)
+        ag2.identify_draw(state)
     ag1.update()
     ag2.update()
 
@@ -135,13 +139,12 @@ def play_game(ag1, ag2, env, draw=False):
 
 if __name__ == "__main__":
 
+    # TODO: optimize computation time (from ~8' for 100k episodes)
     ag1 = Agent(id=1, epsilon=.1, learning_rate=.1)
     ag2 = Agent(id=2, epsilon=.1, learning_rate=.1)
-    for _ in tqdm(range(1000)):
+    for _ in tqdm(range(100000)):
         env = Environment()
         play_game(ag1, ag2, env, draw=False)
-        ag1.state_history = []
-        ag2.state_history = []
         # print(ag1.state_scores)
         # print(ag2.state_scores)
     env = Environment()
