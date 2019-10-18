@@ -32,27 +32,27 @@ class Grid:   # environment
     def move(self, action):
         # check if legal move first
         if action in self.actions[(self.i, self.j)]:
-          if action == 'U':
-            self.i -= 1
-          elif action == 'D':
-            self.i += 1
-          elif action == 'R':
-            self.j += 1
-          elif action == 'L':
-            self.j -= 1
+            if action == 'U':
+                self.i -= 1
+            elif action == 'D':
+                self.i += 1
+            elif action == 'R':
+                self.j += 1
+            elif action == 'L':
+                self.j -= 1
         # return a reward (if any)
         return self.rewards.get((self.i, self.j), 0)
 
     def undo_move(self, action):
         # these are the opposite of what U/D/L/R should normally do
         if action == 'U':
-          self.i += 1
+            self.i += 1
         elif action == 'D':
-          self.i -= 1
+            self.i -= 1
         elif action == 'R':
-          self.j -= 1
+            self.j -= 1
         elif action == 'L':
-          self.j += 1
+            self.j += 1
         # raise an exception if we arrive somewhere we shouldn't be
         # should never happen
         assert(self.current_state() in self.all_states())
