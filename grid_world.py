@@ -3,8 +3,6 @@
 # based on the example file with the same name in the course repo
 
 
-import numpy as np
-
 
 class Grid:   # environment
     def __init__(self, rows, cols, start):
