@@ -22,6 +22,8 @@ class PolicyOptimizer:
         self.state_visits = {}
         # starting with no policy
         self.policy = {}
+        # self.policy = {(2,0): 'U', (1,0): 'U', (2,3): 'U', (0,0): 'R', (0,1): 'R',
+        #                (0,2): 'R', (1,2): 'R', (2,1): 'R', (2,2): 'R'}
 
 
     def perform_episode(self, wind=None, wind_force=0.5):
@@ -66,7 +68,7 @@ class PolicyOptimizer:
                 n = self.state_visits[s]
                 if new_value > self.state_values[s]:
                     self.policy[s] = a
-                self.state_values[s] = (n-1)/n * self.state_values[s] + new_value/n
+                self.state_values[s] = (1 - 1/np.log(n)) * self.state_values[s] + new_value/np.log(n)
             else:
                 self.state_visits[s] = 1
                 self.state_values[s] = new_value
@@ -85,6 +87,10 @@ class PolicyOptimizer:
         elif self.learning_scheme == 'log':
             if t != 1:
                 self.explore_threshold = 1 / np.log(t)
+        elif self.learning_scheme == 'loglog':
+            if t > 3:
+                self.explore_threshold = 1 / np.log(np.log(t))
+
 
 
     def improve_policy(self, nb_iter=1000, **kwargs):
@@ -94,7 +100,6 @@ class PolicyOptimizer:
             self.update_state_value_function(states, actions, rewards)
             self.update_policy()
             self.update_explore_threshold(t+1)
-        print(self.state_visits)
         grid_world.print_policy(self.policy, self.env)
         grid_world.print_values(self.state_values, self.env)
 
@@ -102,8 +107,6 @@ class PolicyOptimizer:
 
 if __name__ == "__main__":
 
-    optimizer = PolicyOptimizer(environment=grid_world.negative_grid(), learning_scheme=None)
-    grid_world.print_policy(optimizer.policy, optimizer.env)
-    grid_world.print_values(optimizer.state_values, optimizer.env)
-    optimizer.improve_policy()
-    # optimizer.improve_policy(wind='right', wind_force=0.2)
+    optimizer = PolicyOptimizer(environment=grid_world.negative_grid(), learning_scheme='loglog')
+    # optimizer.improve_policy()
+    optimizer.improve_policy(wind='right', wind_force=0.2)
