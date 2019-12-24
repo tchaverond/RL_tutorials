@@ -10,6 +10,13 @@ class Grid:   # environment
         self.cols = cols
         self.i = start[0]
         self.j = start[1]
+        self.default_start = start
+
+    def restart(self, start=None):
+        if start is None:
+            start = self.default_start
+        self.i = start[0]
+        self.j = start[1]
 
     def set(self, rewards, actions):
         # rewards should be a dict of: (i, j): r (row, col): reward
@@ -94,3 +101,23 @@ def negative_grid(step_cost=-0.1):
                       (2, 0): step_cost, (2, 1): step_cost, (2, 2): step_cost, (2, 3): step_cost})
     return g
 
+
+def print_values(V, g):
+    for i in range(g.rows):
+        print("---------------------------")
+        for j in range(g.cols):
+            v = V.get((i,j), 0)
+            if v >= 0:
+                print(" %.2f|" % v, end="")
+            else:
+                print("%.2f|" % v, end="")   # -ve sign takes up an extra space
+        print("")
+
+
+def print_policy(P, g):
+    for i in range(g.rows):
+        print("---------------------------")
+        for j in range(g.cols):
+            a = P.get((i,j), ' ')
+            print("  %s  |" % a, end="")
+        print("")

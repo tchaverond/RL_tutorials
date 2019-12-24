@@ -81,37 +81,16 @@ class Agent:
 
 
 
-def print_values(V, g):
-    for i in range(g.rows):
-        print("---------------------------")
-        for j in range(g.cols):
-            v = V.get((i,j), 0)
-            if v >= 0:
-                print(" %.2f|" % v, end="")
-            else:
-                print("%.2f|" % v, end="")   # -ve sign takes up an extra space
-        print("")
-
-
-def print_policy(P, g):
-    for i in range(g.rows):
-        print("---------------------------")
-        for j in range(g.cols):
-            a = P.get((i,j), ' ')
-            print("  %s  |" % a, end="")
-        print("")
-
-
 if __name__ == "__main__":
 
     a = Agent(grid_world.standard_grid(), policy='random', discount_factor=1.0)
     state_values = a.solve_prediction_problem()
     for k, v in state_values.items():
         print(k)
-        print_values(v, a.env)
+        grid_world.print_values(v, a.env)
     a = Agent(grid_world.standard_grid(), policy='win-from-start')
     state_values = a.solve_prediction_problem()
     for k,v in state_values.items():
         print(k)
-        print_values(v, a.env)
+        grid_world.print_values(v, a.env)
 

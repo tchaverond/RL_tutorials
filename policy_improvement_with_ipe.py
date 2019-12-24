@@ -4,7 +4,6 @@
 import numpy as np
 
 import grid_world
-from iterative_policy_evaluation_try_again import print_values, print_policy
 
 np.random.seed(42)
 
@@ -90,8 +89,8 @@ class PolicyOptimizer:
             i += 1
             if i%1 == 0:
                 print("Number of iterations: ", i)
-                print_policy(self.policy, self.env)
-                print_values(self.state_values, self.env)
+                grid_world.print_policy(self.policy, self.env)
+                grid_world.print_values(self.state_values, self.env)
 
 
     def perform_value_iteration(self, wind, wind_force=0.5):
@@ -133,20 +132,20 @@ class PolicyOptimizer:
 
             t += 1
             print("Number of iterations: ", t)
-            print_policy(self.policy, self.env)
-            print_values(self.state_values, self.env)
+            grid_world.print_policy(self.policy, self.env)
+            grid_world.print_values(self.state_values, self.env)
 
 
 if __name__ == "__main__":
 
     optimizer = PolicyOptimizer(environment=grid_world.negative_grid())
-    print_policy(optimizer.policy, optimizer.env)
-    print_values(optimizer.state_values, optimizer.env)
+    grid_world.print_policy(optimizer.policy, optimizer.env)
+    grid_world.print_values(optimizer.state_values, optimizer.env)
     optimizer.perform_value_iteration(wind=None)
 
     # Windy Gridworld: each action has a 50% chance to fail, another action (chosen at random) is performed instead
     optimizer = PolicyOptimizer(environment=grid_world.negative_grid())
-    print_policy(optimizer.policy, optimizer.env)
-    print_values(optimizer.state_values, optimizer.env)
+    grid_world.print_policy(optimizer.policy, optimizer.env)
+    grid_world.print_values(optimizer.state_values, optimizer.env)
     optimizer.perform_value_iteration(wind='right', wind_force=0.26)   # .25 is the threshold to switch optimal agency
 
