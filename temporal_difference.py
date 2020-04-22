@@ -55,8 +55,8 @@ class PolicyOptimizer:
             a_prime = self.epsilon_greedy(s_prime)
             if wind is not None and np.random.random() > 1 - wind_force:
                 if wind == 'random':
-                    a_prime = pick_random(self.env.actions[s_prime])
-                if wind == 'right' and 'R' in self.env.actions[s_prime]:
+                    a_prime = pick_random(self.env.actions.get(s_prime, ['X']))
+                if wind == 'right' and 'R' in self.env.actions.get(s_prime, ['X']):
                     a_prime = 'R'
             old_value = self.state_values[(s, action)]
             self.update_state_value(s, action, reward, s_prime, a_prime)
