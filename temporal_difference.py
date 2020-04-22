@@ -24,9 +24,10 @@ class PolicyOptimizer:
         self.visits = {}
         self.policy = {}
         self.cur_episode = 0
+        self.episode_function = None
 
 
-    def setup(self):
+    def setup(self, method):
 
         for s in self.env.all_states():
             if self.env.is_terminal(s):
@@ -41,9 +42,15 @@ class PolicyOptimizer:
                        for s in self.env.all_states() if not self.env.is_terminal(s)}
         # self.policy = {(2,0): 'U', (1,0): 'U', (2,3): 'U', (0,0): 'R', (0,1): 'R',
         #                (0,2): 'R', (1,2): 'R', (2,1): 'R', (2,2): 'R'}
+        if method == 'sarsa':
+            self.episode_function = self.play_episode_sarsa
+        elif method == 'qlearning':
+            self.episode_function = self.play_episode_qlearning
+        else:
+            raise ValueError("Unknown method (expecting sarsa or qlearning).")
 
 
-    def play_episode(self, wind=None, wind_force=0.5):
+    def play_episode_sarsa(self, wind=None, wind_force=0.5):
 
         self.env.restart()
         self.cur_episode += 1
@@ -52,17 +59,39 @@ class PolicyOptimizer:
         while not self.env.is_terminal(s):
             reward = self.env.move(action)
             s_prime = self.env.current_state()
-            a_prime = self.epsilon_greedy(s_prime)
-            if wind is not None and np.random.random() > 1 - wind_force:
-                if wind == 'random':
-                    a_prime = pick_random(self.env.actions.get(s_prime, ['X']))
-                if wind == 'right' and 'R' in self.env.actions.get(s_prime, ['X']):
-                    a_prime = 'R'
+            a_prime = self.windy_epsilon_greedy(s_prime, wind, wind_force)
             old_value = self.action_values[(s, action)]
             self.update_state_value(s, action, reward, s_prime, a_prime)
             self.update_policy(s, action, old_value)
             s = s_prime
             action = a_prime
+
+
+    def play_episode_qlearning(self, wind=None, wind_force=0.5):
+
+        self.env.restart()
+        self.cur_episode += 1
+        s = self.env.current_state()
+        while not self.env.is_terminal(s):
+            action = self.windy_epsilon_greedy(s, wind, wind_force)
+            reward = self.env.move(action)
+            s_prime = self.env.current_state()
+            a_prime = self.policy.get(s_prime, 'X')
+            old_value = self.action_values[(s, action)]
+            self.update_state_value(s, action, reward, s_prime, a_prime)
+            self.update_policy(s, action, old_value)
+            s = s_prime
+
+
+    def windy_epsilon_greedy(self, cur_state, wind, wind_force):
+
+        action = self.epsilon_greedy(cur_state)
+        if wind is not None and np.random.random() > 1 - wind_force:
+            if wind == 'random':
+                action = pick_random(self.env.actions.get(cur_state, ['X']))
+            if wind == 'right' and 'R' in self.env.actions.get(cur_state, ['X']):
+                action = 'R'
+        return action
 
 
     def epsilon_greedy(self, cur_state):
@@ -107,7 +136,7 @@ class PolicyOptimizer:
     def run(self, nb_iter=10000, **kwargs):
 
         while self.cur_episode < nb_iter:
-            self.play_episode(**kwargs)
+            self.episode_function(**kwargs)
             self.update_explore_threshold()
         grid_world.print_policy(self.policy, self.env)
         state_values = self.compute_state_values_from_action_values()
@@ -125,6 +154,6 @@ class PolicyOptimizer:
 if __name__ == "__main__":
 
     optimizer = PolicyOptimizer(environment=grid_world.negative_grid())
-    optimizer.setup()
+    optimizer.setup(method='qlearning')
     optimizer.run()
 
