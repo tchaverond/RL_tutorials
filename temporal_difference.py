@@ -20,7 +20,7 @@ class PolicyOptimizer:
         self.explore_scheme = explore_scheme
         self.explore_threshold = 1.0
         self.exponential_decay = exponential_decay
-        self.state_values = {}
+        self.action_values = {}
         self.visits = {}
         self.policy = {}
         self.cur_episode = 0
@@ -30,10 +30,10 @@ class PolicyOptimizer:
 
         for s in self.env.all_states():
             if self.env.is_terminal(s):
-                self.state_values[(s,'X')] = 0
+                self.action_values[(s,'X')] = 0
             else:
                 for a in self.env.actions[s]:
-                    self.state_values[(s,a)] = 0
+                    self.action_values[(s,a)] = 0
         self.visits = {(s,a):0 for s in self.env.all_states()
                        if not self.env.is_terminal(s) for a in self.env.actions[s]}
         # starting with random policy
@@ -58,7 +58,7 @@ class PolicyOptimizer:
                     a_prime = pick_random(self.env.actions.get(s_prime, ['X']))
                 if wind == 'right' and 'R' in self.env.actions.get(s_prime, ['X']):
                     a_prime = 'R'
-            old_value = self.state_values[(s, action)]
+            old_value = self.action_values[(s, action)]
             self.update_state_value(s, action, reward, s_prime, a_prime)
             self.update_policy(s, action, old_value)
             s = s_prime
@@ -78,14 +78,14 @@ class PolicyOptimizer:
 
         self.visits[(cur_state, cur_action)] += 1
         decay = self.exponential_decay / self.visits[(cur_state, cur_action)]
-        self.state_values[(cur_state, cur_action)] += \
-            decay * (reward + self.discount * self.state_values[(next_state, next_action)]
-                     - self.state_values[(cur_state, cur_action)])
+        self.action_values[(cur_state, cur_action)] += \
+            decay * (reward + self.discount * self.action_values[(next_state, next_action)]
+                     - self.action_values[(cur_state, cur_action)])
 
 
     def update_policy(self, cur_state, chosen_action, old_value):
 
-        if chosen_action != self.policy[cur_state] and self.state_values[(cur_state, chosen_action)] > old_value:
+        if chosen_action != self.policy[cur_state] and self.action_values[(cur_state, chosen_action)] > old_value:
             self.policy[cur_state] = chosen_action
 
 
@@ -104,14 +104,21 @@ class PolicyOptimizer:
                 self.explore_threshold = 1 / np.log(np.log(t))
 
 
-    def run(self, nb_iter=1000, **kwargs):
+    def run(self, nb_iter=10000, **kwargs):
 
         while self.cur_episode < nb_iter:
             self.play_episode(**kwargs)
             self.update_explore_threshold()
         grid_world.print_policy(self.policy, self.env)
-        # grid_world.print_values(self.state_values, self.env)
-        print(self.state_values)
+        state_values = self.compute_state_values_from_action_values()
+        grid_world.print_values(state_values, self.env)
+
+
+    def compute_state_values_from_action_values(self):
+        state_values = {}
+        for sa, value in self.action_values.items():
+            state_values[sa[0]] = max(state_values.get(sa[0], -1), value)
+        return state_values
 
 
 
